@@ -48,9 +48,9 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	flake8 care_hello tests
+	flake8 care_hrm tests
 lint/black: ## check style with black
-	black --check care_hello tests
+	black --check care_hrm tests
 
 lint: lint/flake8 lint/black ## check style
 
@@ -61,15 +61,15 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source care_hello setup.py test
+	coverage run --source care_hrm setup.py test
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/care_hello.rst
+	rm -f docs/care_hrm.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ care_hello
+	sphinx-apidoc -o docs/ care_hrm
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html

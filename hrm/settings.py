@@ -7,7 +7,7 @@ from django.core.signals import setting_changed
 from django.dispatch import receiver
 from rest_framework.settings import perform_import
 
-from hello.apps import PLUGIN_NAME
+from hrm.apps import PLUGIN_NAME
 
 env = environ.Env()
 

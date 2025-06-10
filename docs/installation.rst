@@ -12,7 +12,7 @@ To install Care Hello, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install care_hello
+    $ pip install care_hrm
 
 This is the preferred method to install Care Hello, as it will always install the most recent stable release.
 
@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/ohcnetwork/care_hello
+    $ git clone git://github.com/ohcnetwork/care_hrm
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/ohcnetwork/care_hello/tarball/master
+    $ curl -OJL https://github.com/ohcnetwork/care_hrm/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/ohcnetwork/care_hello
-.. _tarball: https://github.com/ohcnetwork/care_hello/tarball/master
+.. _Github repo: https://github.com/ohcnetwork/care_hrm
+.. _tarball: https://github.com/ohcnetwork/care_hrm/tarball/master

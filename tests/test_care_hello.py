@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-"""Tests for `hello` package."""
+"""Tests for `hrm` package."""
 
 
 import unittest
 
 
 class TestCareHello(unittest.TestCase):
-    """Tests for `hello` package."""
+    """Tests for `hrm` package."""
 
     def setUp(self):
         """Set up test fixtures, if any."""
