@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 PLUGIN_NAME = "hrm"
 
-
 class HRMConfig(AppConfig):
-    name = PLUGIN_NAME
-    verbose_name = _("Hello")
+   # default_auto_field = "django.db.models.BigAutoField"
+   name = PLUGIN_NAME
+   label = "care_plugin_hrm"
