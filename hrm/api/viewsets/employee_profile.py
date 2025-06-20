@@ -3,6 +3,8 @@ from django.db import transaction
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.http import HttpResponse
+import csv
 from care.emr.api.viewsets.base import (
     EMRBaseViewSet,
     EMRCreateMixin,
@@ -42,28 +44,21 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
             .select_related("user")
             .order_by("-created_date")
         )
-    
-    def perform_create(self, instance):
-        with transaction.atomic():
-            # Check if Employee already exists for the User (by email or username)
-            if Employee.objects.filter(user__email=instance.user.email).exists():
-                raise ValidationError("Employee for this User already exists")
-            instance.user.save()
-            super().perform_create(instance)
 
-    @action(detail=False, methods=["POST"])
-    def auto_create_for_existing_users(self, request):
-        with transaction.atomic():
-            created = 0
-            users_without_employee = User.objects.filter(
-                deleted=False, is_superuser = False
-            ).exclude(id__in=Employee.objects.values_list("user", flat=True))
-            for user in users_without_employee:
-                Employee.objects.create(
-                    user=user,
-                    department="Unknown",
-                    role="Unknown",
-                    hire_date=datetime.today().date(),
-                )
-                created += 1
-            return Response({"created": created})
+    @action(detail=False, methods=["GET"], url_path="export")
+    def export(self, request, *args, **kwargs):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=employees.csv"
+        writer = csv.writer(response)
+        writer.writerow(["Full Name", "Email", "Department", "Role", "Hire Date", "Phone Number"])
+        for employee in self.get_queryset():
+            writer.writerow({
+                employee.user.get_full_name() or employee.user.username,
+                employee.user.email,
+                employee.department,
+                employee.role,
+                employee.hire_date,
+                employee.user.phone_number 
+            })
+
+        return response

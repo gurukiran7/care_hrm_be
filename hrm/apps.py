@@ -7,3 +7,7 @@ class HRMConfig(AppConfig):
    # default_auto_field = "django.db.models.BigAutoField"
    name = PLUGIN_NAME
    label = "care_plugin_hrm"
+   def ready(self):
+      import hrm.signals
+
+      
