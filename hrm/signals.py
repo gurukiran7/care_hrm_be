@@ -4,6 +4,8 @@ from care.users.models import User
 from hrm.models.employee_profile import Employee
 from datetime import date
 import threading
+from hrm.models.leave_type import LeaveType
+from hrm.models.leave_balance import LeaveBalance
 
 _employee_creation_context = threading.local()
 _employee_creation_context.suppress_signal = False
@@ -40,3 +42,27 @@ def create_employee_for_new_user(sender, instance, created, **kwargs):
             "hire_date": date.today()
         }
     )
+
+@receiver(post_save, sender=LeaveType)
+def create_leave_balances_for_new_leave_type(sender, instance, created, **kwargs):
+    if created:
+        for employee in Employee.objects.all():
+            LeaveBalance.objects.get_or_create(
+                employee=employee,
+                leave_type=instance,
+                defaults={"balance": instance.default_days}
+            )
+
+@receiver(post_save, sender=Employee)
+def create_leave_balances_for_new_employee(sender, instance, created, **kwargs):
+    """
+    Automatically create default leave balances for a new Employee.
+    """
+    if created:
+        leave_types = LeaveType.objects.all()
+        for leave_type in leave_types:
+            LeaveBalance.objects.get_or_create(
+                employee=instance,
+                leave_type=leave_type,
+                defaults={"balance": leave_type.default_days}
+            )
