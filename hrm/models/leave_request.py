@@ -12,6 +12,7 @@ class LeaveRequest(EMRBaseModel):
         ("approved", "Approved"),
         ("rejected", "Rejected"),
         ("cancelled", "Cancelled"),
+        ("cancellation_requested", "Cancellation Requested")
         
     )
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='leaves')
@@ -19,7 +20,7 @@ class LeaveRequest(EMRBaseModel):
     start_date = models.DateField()
     end_date = models.DateField()
     days_requested = models.PositiveIntegerField(default=1)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="pending")
     reason = models.TextField(blank=True, null=True)
     requested_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -42,4 +43,6 @@ class LeaveRequest(EMRBaseModel):
             balance.balance -=self.days_requested
             balance.save()
         super().save(*args, **kwargs)   
+
+    
 

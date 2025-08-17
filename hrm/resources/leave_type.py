@@ -11,7 +11,6 @@ class LeaveTypeBaseSpec(EMRResource):
     id: Optional[UUID4] = None
     name: str = Field(max_length=100)
     default_days: int = 0
-    is_active: bool = True
 
 class LeaveTypeCreateSpec(LeaveTypeBaseSpec):
     pass
@@ -19,7 +18,6 @@ class LeaveTypeCreateSpec(LeaveTypeBaseSpec):
 class LeaveTypeUpdateSpec(LeaveTypeBaseSpec):
     name: Optional[str] = None
     default_days: Optional[int] = None
-    is_active: Optional[bool] = None
 
 
 class LeaveTypeRetrieveSpec(LeaveTypeBaseSpec):

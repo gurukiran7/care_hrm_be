@@ -19,13 +19,16 @@ class LeaveRequestBaseSpec(EMRResource):
     start_date: date
     end_date: date
     days_requested: int
+    requested_at: Optional[date] = None
     status: Literal["pending", "approved", "rejected", "cancelled"] = "pending"
     reason: Optional[str] = None
+
 
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
         mapping["employee"] = str(obj.employee.external_id) 
         mapping["external_id"] = str(obj.external_id)
+        mapping["requested_at"] = obj.requested_at.isoformat() if obj.requested_at else None
         if obj.leave_type:
            mapping["leave_type"] = LeaveTypeRetrieveSpec.serialize(obj.leave_type).to_json()
         else:
@@ -43,23 +46,47 @@ class LeaveRequestUpdateSpec(LeaveRequestBaseSpec):
             obj.employee = Employee.objects.get(external_id=self.employee)
         if self.leave_type:
             obj.leave_type = LeaveType.objects.get(external_id=self.leave_type)
-        if self.status:
-            obj.status = self.status
+        if is_update and obj.status == "approved":
+            obj.status = "pending"
         
 
 
 class LeaveRequestRetrieveSpec(LeaveRequestBaseSpec):
+    can_edit: bool = False
+    can_cancel: bool = False
+    leave_type: dict = None
+    employee_name: str
+    leave_balance: int | None = None
 
-    pass
-
-class LeaveRequestListSpec(LeaveRequestRetrieveSpec):
-    employee: dict
-    leave_type: dict
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
-        mapping["id"] = obj.external_id
-        mapping["employee"] = EmployeeProfileRetrieveSpec.serialize(obj.employee).to_json()
+        today = date.today()
+        mapping["employee_name"] = (
+            obj.employee.user.get_full_name()
+            if obj.employee and obj.employee.user and obj.employee.user.get_full_name()
+            else (obj.employee.user.username if obj.employee and obj.employee.user else "")
+        )
+        from hrm.models.leave_balance import LeaveBalance
+        balance_obj = LeaveBalance.objects.filter(employee=obj.employee, leave_type=obj.leave_type).first()
+        mapping["leave_balance"] = balance_obj.balance if balance_obj else None
+        mapping["can_edit"] = (
+            (obj.status == "pending") or
+            (obj.status == "rejected") or
+            ((obj.status == "approved") and (obj.start_date > today))
+        )
+        mapping["id"] = str(obj.external_id)
+        mapping["can_cancel"] = (
+            (obj.status == "pending") or
+            ((obj.status == "approved") and (obj.start_date > today))
+        )
         if obj.leave_type:
-           mapping["leave_type"] = LeaveTypeRetrieveSpec.serialize(obj.leave_type).to_json()
+            mapping["leave_type"] = LeaveTypeRetrieveSpec.serialize(obj.leave_type).to_json()
         else:
-           mapping["leave_type"] = None
+            mapping["leave_type"] = None
+
+class LeaveRequestListSpec(LeaveRequestRetrieveSpec):
+    @classmethod
+    def perform_extra_serialization(cls, mapping, obj):
+        super().perform_extra_serialization(mapping, obj)
+        mapping["id"] = str(obj.external_id)
+        

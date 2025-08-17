@@ -7,6 +7,8 @@ from hrm.resources.leave_balance import (
     LeaveBalanceListSpec,
 )
 from django_filters import rest_framework as filters
+from care.security.authorization import AuthorizationController
+from rest_framework.exceptions import PermissionDenied
 
 class LeaveBalanceFilters(filters.FilterSet):
     employee = filters.UUIDFilter(field_name="employee__external_id")
@@ -25,8 +27,19 @@ class LeaveBalanceViewSet(EMRModelViewSet):
     filterset_class = LeaveBalanceFilters
     filter_backends = [filters.DjangoFilterBackend]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(leave_type__deleted=False)
 
-    def update(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-        return super().update(request, *args, **kwargs)
+
+    def authorize_update(self, request_obj, model_instance):
+        if not AuthorizationController.call(
+            "can_update_leave_balance", self.request.user, model_instance
+        ):
+            raise PermissionDenied("You do not have permission to update leave balances.")
+
+    def authorize_list(self, request_obj):
+        if not AuthorizationController.call(
+            "can_list_leave_balances", self.request.user
+        ):
+            raise PermissionDenied("You do not have permission to list leave balances.")
