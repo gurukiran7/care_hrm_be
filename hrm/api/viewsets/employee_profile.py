@@ -19,7 +19,10 @@ from hrm.resources.employee_profile import (
     EmployeeProfileUpdateSpec,
     EmployeeProfileRetrieveSpec,
     EmployeeProfileBaseSpec,
+    EmployeeProfileListSpec
 )
+from datetime import date
+from django.db.models import OuterRef, Exists  
 
 class EmployeeProfileFilters(filters.FilterSet):
     department = filters.CharFilter(field_name="department", lookup_expr="icontains")
@@ -31,7 +34,7 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
     database_model = Employee
     pydantic_model = EmployeeProfileCreateSpec
     pydantic_update_model = EmployeeProfileUpdateSpec
-    pydantic_read_model = EmployeeProfileBaseSpec
+    pydantic_read_model = EmployeeProfileListSpec
     pydantic_retrieve_model = EmployeeProfileRetrieveSpec
     filterset_class = EmployeeProfileFilters
     filter_backends = [filters.DjangoFilterBackend]
@@ -44,10 +47,20 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
         return Response(self.pydantic_retrieve_model.serialize(obj).to_json())
 
     def get_queryset(self):
+        today = date.today()
+        from hrm.models.leave_request import LeaveRequest
+
+        leave_subquery = LeaveRequest.objects.filter(
+            employee=OuterRef('pk'),
+            status="approved",
+            start_date__lte=today,
+            end_date__gte=today,
+        )
         return (
             super()
             .get_queryset()
             .select_related("user")
+            .annotate(is_on_leave=Exists(leave_subquery))
             .order_by("-created_date")
         )
 
@@ -68,5 +81,15 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
             })
 
         return response
+    
+    @action(detail=False, methods=["GET"], url_path="current")
+    def get_current_employee(self, request):
+        if request.user.is_superuser:
+           return Response(None, status=200)
+        employee = Employee.objects.filter(user=request.user).first()
+        if not employee:
+           return Response({"detail": "Employee record not found."}, status=404)
+        data = self.pydantic_retrieve_model.serialize(employee).to_json()
+        return Response(data)
 
    

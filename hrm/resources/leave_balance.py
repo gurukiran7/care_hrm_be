@@ -28,7 +28,6 @@ class LeaveBalanceCreateSpec(LeaveBalanceBaseSpec):
     balance: int = 0
 
     def perform_extra_deserialization(self, is_update, obj):
-        # Convert UUIDs to model instances
         if self.employee:
             obj.employee = get_object_or_404(Employee, external_id=self.employee)
         if self.leave_type:
@@ -41,18 +40,29 @@ class LeaveBalanceCreateSpec(LeaveBalanceBaseSpec):
 class LeaveBalanceUpdateSpec(LeaveBalanceBaseSpec):
     leave_type: UUID4 | None = None
     employee: UUID4 | None = None
-    
+    balance: int 
+
+    def perform_extra_deserialization(self, is_update, obj):
+        if self.balance is not None:
+            obj.balance = self.balance
 
 class LeaveBalanceRetrieveSpec(LeaveBalanceBaseSpec):
     pass
 
 class LeaveBalanceListSpec(LeaveBalanceRetrieveSpec):
     leave_type:str
+    leave_type_id: str
     external_id: str
     employee: str
 
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
+        if obj.leave_type and not obj.leave_type.deleted:
+            mapping["leave_type"] = obj.leave_type.name
+            mapping["leave_type_id"] = str(obj.leave_type.external_id)
+        else:
+            mapping["leave_type"] = None
+            mapping["leave_type_id"] = None
         mapping["employee"]= str(obj.employee.external_id) if obj.employee else None
         mapping["external_id"] = str(obj.external_id)
-        mapping["leave_type"] =  obj.leave_type.name if obj.leave_type else None
+
