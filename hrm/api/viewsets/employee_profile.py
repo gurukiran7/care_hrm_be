@@ -36,6 +36,12 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
     filterset_class = EmployeeProfileFilters
     filter_backends = [filters.DjangoFilterBackend]
 
+    def create(self, request, *args, **kwargs):
+        instance = self.pydantic_model(**request.data)
+        obj = self.database_model()
+        instance.perform_extra_deserialization(is_update=False, obj=obj, request=request)
+        obj.save()
+        return Response(self.pydantic_retrieve_model.serialize(obj).to_json())
 
     def get_queryset(self):
         return (
@@ -62,3 +68,5 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
             })
 
         return response
+
+   

@@ -26,14 +26,17 @@ class EmployeeProfileBaseSpec(EMRResource):
 class EmployeeProfileCreateSpec(EmployeeProfileBaseSpec):
     user: UserCreateSpec
 
-    def perform_extra_deserialization(self, is_update, obj):
-      if not is_update:
-        with suppress_employee_signal():
-            user_instance = User.objects.create_user(**self.user.model_dump(exclude={"id", "meta"}))
-        obj.user = user_instance
-      obj.department = self.department
-      obj.role = self.role
-      obj.hire_date = self.hire_date
+    def perform_extra_deserialization(self, is_update, obj, request=None):
+        if not is_update:
+            with suppress_employee_signal():
+                user_data = self.user.model_dump(exclude={"id", "meta"})
+                if request and request.user.is_authenticated:
+                    user_data["created_by"] = request.user
+                user_instance = User.objects.create_user(**user_data)
+            obj.user = user_instance
+        obj.department = self.department
+        obj.role = self.role
+        obj.hire_date = self.hire_date
 
 
 

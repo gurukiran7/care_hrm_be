@@ -1,7 +1,7 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from care.emr.api.viewsets.base import (
@@ -19,6 +19,7 @@ from hrm.resources.leave_request import (
     LeaveRequestRetrieveSpec,
     LeaveRequestListSpec,
 )
+from datetime import datetime
 
 class LeaveRequestFilters(filters.FilterSet):
     employee = filters.UUIDFilter(field_name="employee__external_id")
@@ -33,11 +34,6 @@ class LeaveRequestViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRL
     filterset_class = LeaveRequestFilters
     filter_backends = [filters.DjangoFilterBackend]
 
-    def authorize_create(self, instance):
-        employee = get_object_or_404(Employee, external_id=instance.employee_id)
-        if self.request.user != employee.user and not self.request.user.is_staff:
-            raise PermissionDenied("Only the employee or HR can submit leave requests")
-
     def authorize_update(self, request_obj, model_instance):
         if not self.request.user.is_staff:
             raise PermissionDenied("Only HR can approve/reject leave requests")
@@ -46,7 +42,7 @@ class LeaveRequestViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRL
         with transaction.atomic():
             if self.request.data.get("status") in ["approved", "rejected"]:
                 instance.approved_by = self.request.user
-                instance.modified_date = datetime.datetime.now()
+                instance.modified_date = datetime.now()
             super().perform_update(instance)
 
 
@@ -54,7 +50,7 @@ class LeaveRequestViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRL
         return (
             super()
             .get_queryset()
-            .select_related("employee", "employee__user", "approved_by")
+            .select_related("employee", "employee__user", "reviewed_by")
             .order_by("-created_date")
         )
 
