@@ -46,8 +46,9 @@ class LeaveRequestUpdateSpec(LeaveRequestBaseSpec):
             obj.employee = Employee.objects.get(external_id=self.employee)
         if self.leave_type:
             obj.leave_type = LeaveType.objects.get(external_id=self.leave_type)
-        if is_update and obj.status == "approved":
+        if is_update and obj.status in ["approved", "rejected"]:
             obj.status = "pending"
+
         
 
 
