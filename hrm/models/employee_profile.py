@@ -7,7 +7,6 @@ class Employee(EMRBaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="employees")
     hire_date = models.DateField()
     address = models.TextField(default="") 
-    education = models.TextField(default="", blank=True, null=True) 
     pincode = models.IntegerField(default=0, blank=True, null=True)
 
 
