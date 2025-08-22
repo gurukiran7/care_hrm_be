@@ -42,12 +42,23 @@ class LeaveRequestCreateSpec(LeaveRequestBaseSpec):
 
 class LeaveRequestUpdateSpec(LeaveRequestBaseSpec):
     def perform_extra_deserialization(self, is_update, obj):
+        from hrm.models.leave_balance import LeaveBalance
+
+        # Track if we need to reimburse
+        was_approved = obj.status == "approved"
+
         if self.employee:
             obj.employee = Employee.objects.get(external_id=self.employee)
         if self.leave_type:
             obj.leave_type = LeaveType.objects.get(external_id=self.leave_type)
-        if is_update and obj.status in ["approved", "rejected"]:
+
+        # If editing an approved leave and changing to pending, reimburse balance
+        if is_update and was_approved and obj.status in ["approved", "rejected"]:
             obj.status = "pending"
+            balance_obj = LeaveBalance.objects.filter(employee=obj.employee, leave_type=obj.leave_type).first()
+            if balance_obj:
+                balance_obj.balance += obj.days_requested
+                balance_obj.save()
 
         
 
@@ -90,4 +101,3 @@ class LeaveRequestListSpec(LeaveRequestRetrieveSpec):
     def perform_extra_serialization(cls, mapping, obj):
         super().perform_extra_serialization(mapping, obj)
         mapping["id"] = str(obj.external_id)
-        

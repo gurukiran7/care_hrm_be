@@ -13,7 +13,6 @@ class EmployeeDocumentUploadSpec(FileUploadBaseSpec):
     mime_type: str
 
     def perform_extra_deserialization(self, is_update, obj):
-        # Authz Performed in the request
         obj._just_created = True  # noqa SLF001
         obj.internal_name = self.original_name
         obj.meta["mime_type"] = self.mime_type
