@@ -1,14 +1,20 @@
+from enum import Enum
+from pydantic import BaseModel, UUID4, field_validator
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from pydantic import field_validator, BaseModel, UUID4
-from care.emr.resources.base import EMRResource
-from care.utils.models.validators import file_name_validator
 from care.emr.resources.file_upload.spec import FileUploadBaseSpec
+from care.utils.models.validators import file_name_validator
+
+class EmployeeFileTypeChoices(str, Enum):
+    employee = "employee"
+
+class EmployeeFileCategoryChoices(str, Enum):
+    employee_document = "employee_document"
 
 class EmployeeDocumentUploadSpec(FileUploadBaseSpec):
     original_name: str
-    file_type: str = "employee"
-    file_category: str = "employee_document"
+    file_type: EmployeeFileTypeChoices = EmployeeFileTypeChoices.employee
+    file_category: EmployeeFileCategoryChoices = EmployeeFileCategoryChoices.employee_document
     associating_id: UUID4
     mime_type: str
 
@@ -16,6 +22,8 @@ class EmployeeDocumentUploadSpec(FileUploadBaseSpec):
         obj._just_created = True  # noqa SLF001
         obj.internal_name = self.original_name
         obj.meta["mime_type"] = self.mime_type
+        obj.file_type = self.file_type or "employee"
+        obj.file_category = self.file_category or "employee_document"
 
     @field_validator("mime_type")
     @classmethod 
@@ -24,7 +32,6 @@ class EmployeeDocumentUploadSpec(FileUploadBaseSpec):
             raise ValueError("Invalid mime type")
         return mime_type
 
-    
     @field_validator("original_name")
     @classmethod
     def validate_original_name(cls, original_name: str):
