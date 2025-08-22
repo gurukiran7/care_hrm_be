@@ -10,7 +10,6 @@ from care.security.roles.role import (
     VOLUNTEER_ROLE,
 )
 
-hr_roles = [ADMIN_ROLE, FACILITY_ADMIN_ROLE, ADMINISTRATOR]
 employee_roles = [
     STAFF_ROLE,
     DOCTOR_ROLE,
@@ -21,35 +20,34 @@ employee_roles = [
     ADMINISTRATOR,
 ]
 
-class EmployeePermissions(enum.Enum):
-    can_list_employees = Permission(
-        "Can List Employees",
-        "",
-        PermissionContext.FACILITY,
-        hr_roles,
-    )
-    can_create_employee = Permission(
-        "Can Create Employee",
-        "",
-        PermissionContext.FACILITY,
-        hr_roles,
-    )
-    can_update_employee = Permission(
-        "Can Update Employee",
-        "",
-        PermissionContext.FACILITY,
-        hr_roles,
-    )
-    can_view_employee_details = Permission(
-        "Can View Employee Details",
-        "",
-        PermissionContext.FACILITY,
-        hr_roles,
-    )
-    can_view_own_employee_profile = Permission(
-        "Can View Own Employee Profile",
+hr_roles = [
+    ADMIN_ROLE,
+    FACILITY_ADMIN_ROLE,
+    ADMINISTRATOR,
+]
+
+class HolidayPermissions(enum.Enum):
+    can_list_holidays = Permission(
+        "Can List Holidays",
         "",
         PermissionContext.FACILITY,
         employee_roles,
     )
-
+    can_create_holiday = Permission(
+        "Can Create Holiday",
+        "",
+        PermissionContext.FACILITY,
+        hr_roles,
+    )
+    can_update_holiday = Permission(
+        "Can Update Holiday",
+        "",
+        PermissionContext.FACILITY,
+        hr_roles,
+    )
+    can_delete_holiday = Permission(
+        "Can Delete Holiday",
+        "",
+        PermissionContext.FACILITY,
+        hr_roles,
+    )

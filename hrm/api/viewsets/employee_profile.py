@@ -23,6 +23,8 @@ from hrm.resources.employee_profile import (
 )
 from datetime import date
 from django.db.models import OuterRef, Exists  
+from hrm.models.holiday import Holiday
+from hrm.models.leave_request import LeaveRequest
 
 class EmployeeProfileFilters(filters.FilterSet):
     department = filters.CharFilter(field_name="department", lookup_expr="icontains")
@@ -64,24 +66,7 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
             .order_by("-created_date")
         )
 
-    @action(detail=False, methods=["GET"], url_path="export")
-    def export(self, request, *args, **kwargs):
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = "attachment; filename=employees.csv"
-        writer = csv.writer(response)
-        writer.writerow(["Full Name", "Email", "Department", "Role", "Hire Date", "Phone Number"])
-        for employee in self.get_queryset():
-            writer.writerow({
-                employee.user.get_full_name() or employee.user.username,
-                employee.user.email,
-                employee.department,
-                employee.role,
-                employee.hire_date,
-                employee.user.phone_number 
-            })
-
-        return response
-    
+   
     @action(detail=False, methods=["GET"], url_path="current")
     def get_current_employee(self, request):
         if request.user.is_superuser:
@@ -92,4 +77,29 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
         data = self.pydantic_retrieve_model.serialize(employee).to_json()
         return Response(data)
 
-   
+    @action(detail=True, methods=["GET"], url_path="holidays")
+    def get_employee_holidays(self, request, pk=None, **kwargs):
+        employee = self.get_object()
+        holidays = Holiday.objects.filter(deleted=False)
+        today = date.today()
+        leaves = LeaveRequest.objects.filter(employee=employee, status="approved", end_date__gte=today)
+        result = []
+        for holiday in holidays:
+            result.append({
+                "id": holiday.id, 
+                "type": "holiday",
+                "name": holiday.name,
+                "date": holiday.date,
+                "description": holiday.description,
+            })
+        for leave in leaves:
+            result.append({
+                "id": leave.id, 
+                "type": "leave",
+                "name": leave.leave_type.name if leave.leave_type else "Leave",
+                "start_date": leave.start_date,
+                "end_date": leave.end_date,
+                "reason": leave.reason,
+            })
+        return Response(result)
+

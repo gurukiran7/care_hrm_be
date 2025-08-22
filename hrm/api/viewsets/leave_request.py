@@ -32,6 +32,7 @@ class LeaveRequestFilters(filters.FilterSet):
     employee = filters.UUIDFilter(field_name="employee__external_id")
     status = CharInFilter(field_name="status", lookup_expr="in")
     start_date = filters.DateFilter(field_name="start_date", lookup_expr="gt")
+    end_date = filters.DateFilter(field_name="end_date", lookup_expr="gte")
 
 class LeaveRequestViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet):
     database_model = LeaveRequest

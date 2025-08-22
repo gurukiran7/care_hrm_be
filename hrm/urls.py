@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-
+from hrm.api.viewsets.holiday import HolidayViewSet
 from hrm.api.viewsets.employee_profile import EmployeeProfileViewSet
 from hrm.api.viewsets.leave_request import LeaveRequestViewSet
 from hrm.api.viewsets.leave_balance import LeaveBalanceViewSet
@@ -12,5 +12,5 @@ router.register("leaves", LeaveRequestViewSet, basename="hrm-leaves")
 router.register("leave-balances", LeaveBalanceViewSet, basename="hrm-leave-balances")
 router.register("leave-types", LeaveTypeViewSet, basename="hrm-leave-types")
 router.register('employee-documents', EmployeeDocumentViewSet, basename='employee-document')
-
+router.register("holidays", HolidayViewSet, basename="hrm-holidays")
 urlpatterns = router.urls
