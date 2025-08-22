@@ -80,8 +80,8 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
     @action(detail=True, methods=["GET"], url_path="holidays")
     def get_employee_holidays(self, request, pk=None, **kwargs):
         employee = self.get_object()
-        holidays = Holiday.objects.filter(deleted=False)
         today = date.today()
+        holidays = Holiday.objects.filter(deleted=False, date__gte=today)
         leaves = LeaveRequest.objects.filter(employee=employee, status="approved", end_date__gte=today)
         result = []
         for holiday in holidays:
