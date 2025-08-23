@@ -12,7 +12,9 @@ class HRMConfig(AppConfig):
    def ready(self):
       import hrm.signals
       import hrm.security.authorization.leave
+      import hrm.security.authorization.employee 
       from hrm.security.permissions.leave import LeavePermissions
+      from hrm.security.permissions.employee import EmployeePermissions
       PermissionController.register_permission_handler(LeavePermissions)
+      PermissionController.register_permission_handler(EmployeePermissions)
 
-       

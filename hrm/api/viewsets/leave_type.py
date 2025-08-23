@@ -8,10 +8,14 @@ from hrm.resources.leave_type import (
 )
 from care.security.authorization import AuthorizationController
 from rest_framework.exceptions import PermissionDenied
-
 from django.core.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
+from django_filters import rest_framework as filters
+
+
+class LeaveTypeFilters(filters.FilterSet):
+    name = filters.CharFilter(field_name="name", lookup_expr="icontains")
 
 class LeaveTypeViewSet(EMRModelViewSet):
     database_model = LeaveType
@@ -19,6 +23,7 @@ class LeaveTypeViewSet(EMRModelViewSet):
     pydantic_update_model = LeaveTypeUpdateSpec
     pydantic_read_model = LeaveTypeListSpec
     pydantic_retrieve_model = LeaveTypeRetrieveSpec
+    filterset_class = LeaveTypeFilters
 
     def authorize_create(self, request_obj):
         if not AuthorizationController.call(
