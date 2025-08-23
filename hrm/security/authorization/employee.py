@@ -30,18 +30,26 @@ class EmployeeAccess(AuthorizationHandler):
         ):
             return True
 
-    def can_retrieve_employee(self, user, employee):
+    def can_view_employee_details(self, user, employee):
         if user.is_superuser:
             return True
-        # HR can retrieve any employee
-        if self.check_permission_in_facility_organization(
+        return self.check_permission_in_facility_organization(
             [EmployeePermissions.can_view_employee_details.name], user
         ) or self.check_permission_in_organization(
             [EmployeePermissions.can_view_employee_details.name], user
-        ):
-            return True
-        return employee.user_id == user.id and self.check_permission_in_facility_organization(
-            [EmployeePermissions.can_view_own_employee_profile.name], user
         )
+
+    def can_view_own_employee_profile(self, user, employee):
+        if user.is_superuser:
+            return True
+        print("employee.user.id:", getattr(employee.user, "id", None), "user.id:", getattr(user, "id", None))
+        return (
+            self.check_permission_in_facility_organization(
+                [EmployeePermissions.can_view_own_employee_profile.name], user
+            )
+            or self.check_permission_in_organization(
+                [EmployeePermissions.can_view_own_employee_profile.name], user
+            )
+        ) and getattr(employee.user, "id", None) == getattr(user, "id", None)
 
 AuthorizationController.register_internal_controller(EmployeeAccess)

@@ -25,11 +25,12 @@ from datetime import date
 from django.db.models import OuterRef, Exists  
 from hrm.models.holiday import Holiday
 from hrm.models.leave_request import LeaveRequest
+from care.security.authorization import AuthorizationController
+from rest_framework.exceptions import PermissionDenied
 
 class EmployeeProfileFilters(filters.FilterSet):
-    department = filters.CharFilter(field_name="department", lookup_expr="icontains")
-    role = filters.CharFilter(field_name="role", lookup_expr="icontains")
     user = filters.UUIDFilter(field_name="user__external_id")
+    first_name = filters.CharFilter(field_name="user__first_name", lookup_expr="icontains")
 
 
 class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMixin, EMRBaseViewSet):
@@ -66,7 +67,42 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
             .order_by("-created_date")
         )
 
-   
+    def authorize_list(self):
+        if self.request.user.is_superuser:
+            return
+        if not AuthorizationController.call(
+            "can_list_employees", self.request.user
+        ):
+            raise PermissionDenied("You do not have permission to list employees.")
+
+    def authorize_retrieve(self, model_instance):
+        if self.request.user.is_superuser:
+             return
+        if AuthorizationController.call(
+            "can_view_employee_details", self.request.user, model_instance
+        ):
+            return
+        if AuthorizationController.call(
+            "can_view_own_employee_profile", self.request.user, model_instance
+        ):
+             return
+        raise PermissionDenied("You do not have permission to view this employee profile.")
+    def authorize_update(self, model_instance):
+        if self.request.user.is_superuser:
+            return
+        if not AuthorizationController.call(
+            "can_update_employee", self.request.user, model_instance
+        ):
+            raise PermissionDenied("You do not have permission to update this employee profile.")
+
+    def authorize_create(self):
+        if self.request.user.is_superuser:
+            return
+        if not AuthorizationController.call(
+            "can_create_employee", self.request.user
+        ):
+            raise PermissionDenied("You do not have permission to create employee profiles.")
+
     @action(detail=False, methods=["GET"], url_path="current")
     def get_current_employee(self, request):
         if request.user.is_superuser:

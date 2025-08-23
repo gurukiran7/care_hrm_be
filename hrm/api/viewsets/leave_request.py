@@ -49,11 +49,11 @@ class LeaveRequestViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRL
         ):
             raise PermissionDenied("You do not have permission to update leave requests.")
 
-    # def authorize_create(self, request_obj):
-    #     if not AuthorizationController.call(
-    #         "can_create_leave_request", self.request.user
-    #     ):
-    #         raise PermissionDenied("You do not have permission to create leave requests.")
+    def authorize_create(self, request_obj):
+        if not AuthorizationController.call(
+            "can_create_leave_request", self.request.user
+        ):
+            raise PermissionDenied("You do not have permission to create leave requests.")
 
     def authorize_list(self, request_obj):
         if self.request.user.is_superuser:
