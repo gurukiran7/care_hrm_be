@@ -5,6 +5,7 @@ from hrm.api.viewsets.leave_request import LeaveRequestViewSet
 from hrm.api.viewsets.leave_balance import LeaveBalanceViewSet
 from hrm.api.viewsets.leave_type import LeaveTypeViewSet
 from hrm.api.viewsets.employee_document import EmployeeDocumentViewSet
+from care.users.api.viewsets.skill import SkillViewSet
 router = DefaultRouter()
 
 router.register("employees", EmployeeProfileViewSet, basename="hrm-employees")
@@ -13,4 +14,5 @@ router.register("leave-balances", LeaveBalanceViewSet, basename="hrm-leave-balan
 router.register("leave-types", LeaveTypeViewSet, basename="hrm-leave-types")
 router.register('employee-documents', EmployeeDocumentViewSet, basename='employee-document')
 router.register("holidays", HolidayViewSet, basename="hrm-holidays")
+router.register("skills", SkillViewSet, basename="hrm-skills")
 urlpatterns = router.urls
