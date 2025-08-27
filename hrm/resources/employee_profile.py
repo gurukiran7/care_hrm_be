@@ -6,6 +6,10 @@ from hrm.models.employee_profile import Employee
 from care.emr.resources.user.spec import UserCreateSpec, UserRetrieveSpec, UserUpdateSpec
 from hrm.signals import suppress_employee_signal
 from typing import List, Optional
+from care.emr.models import Organization
+from care.emr.models.organization import OrganizationUser
+from care.security.models import RoleModel
+from care.emr.resources.user.spec import UserTypeRoleMapping
 
 class UserWithExtrasMixin:
     date_of_birth: Optional[date] = None
@@ -67,6 +71,27 @@ class EmployeeProfileCreateSpec(EmployeeProfileBaseSpec):
                 user_instance = User.objects.create_user(**user_data)
                 self._handle_user_skills(user_instance, self.user.skills)
             obj.user = user_instance
+
+            org_name = user_instance.user_type.capitalize()
+            org = Organization.objects.filter(
+                parent__isnull=True,
+                name=org_name,
+                org_type="role",
+                system_generated=True,
+            ).first()
+            if not org:
+                org = Organization.objects.create(
+                    name=org_name, org_type="role", system_generated=True
+                )
+            OrganizationUser.objects.create(
+                organization=org,
+                user=user_instance,
+                role=RoleModel.objects.get(
+                    is_system=True,
+                    name=UserTypeRoleMapping[user_instance.user_type].value.name,
+                ),
+            )
+
         self._apply_common_fields(obj)
         obj.save()
 
