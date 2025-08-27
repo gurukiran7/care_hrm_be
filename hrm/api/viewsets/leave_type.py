@@ -24,6 +24,7 @@ class LeaveTypeViewSet(EMRModelViewSet):
     pydantic_read_model = LeaveTypeListSpec
     pydantic_retrieve_model = LeaveTypeRetrieveSpec
     filterset_class = LeaveTypeFilters
+    filter_backends = [filters.DjangoFilterBackend]
 
     def authorize_create(self, request_obj):
         if not AuthorizationController.call(

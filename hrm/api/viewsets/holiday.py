@@ -14,6 +14,7 @@ from rest_framework.exceptions import PermissionDenied
 
 class HolidayFilters(filters.FilterSet):
     date = filters.DateFilter(field_name="date")
+    name = filters.CharFilter(field_name="name", lookup_expr="icontains")
     date__gte = filters.DateFilter(field_name="date", lookup_expr="gte")
     date__lte = filters.DateFilter(field_name="date", lookup_expr="lte")
 
