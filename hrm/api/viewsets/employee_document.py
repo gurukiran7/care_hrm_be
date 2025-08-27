@@ -41,10 +41,14 @@ class EmployeeDocumentViewSet(
     filter_backends = [filters.DjangoFilterBackend]
 
     def get_queryset(self):
-        return super().get_queryset().filter(
+        queryset = super().get_queryset().filter(
             file_type="employee",
             file_category="employee_document"
         )
+        associating_id = self.request.query_params.get("associating_id")
+        if associating_id:
+            queryset = queryset.filter(associating_id=associating_id)
+        return queryset
 
     @action(detail=True, methods=["POST"], url_path="mark_upload_completed")
     def mark_upload_completed(self, request, *args, **kwargs):
