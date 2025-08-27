@@ -73,6 +73,7 @@ class LeaveRequestRetrieveSpec(LeaveRequestBaseSpec):
     @classmethod
     def perform_extra_serialization(cls, mapping, obj):
         today = date.today()
+        mapping["employee"] = str(obj.employee.external_id) if obj.employee else None
         mapping["employee_name"] = (
             obj.employee.user.get_full_name()
             if obj.employee and obj.employee.user and obj.employee.user.get_full_name()
