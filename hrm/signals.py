@@ -37,8 +37,6 @@ def create_employee_for_new_user(sender, instance, created, **kwargs):
     Employee.objects.get_or_create(
         user=instance,
         defaults={
-            "department": "unknown",
-            "role": "unknown",
             "hire_date": date.today()
         }
     )
