@@ -137,5 +137,7 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
                 "end_date": leave.end_date,
                 "reason": leave.reason,
             })
+         # Sort by earliest date (holiday.date or leave.start_date)
+        result.sort(key=lambda x: x.get("date") or x.get("start_date"))
         return Response(result)
 

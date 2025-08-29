@@ -32,12 +32,16 @@ class HolidayViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMi
 
 
     def authorize_create(self, request_obj):
-        if not (self.request.user.is_superuser or self.request.user.is_hr):
-            raise PermissionDenied("Only HR or superuser can create holidays.")
+        if not AuthorizationController.call(
+            "can_create_holiday", self.request.user
+        ):
+            raise PermissionDenied("You do not have permission to create holidays.")
 
     def authorize_update(self, request_obj, model_instance):
-        if not (self.request.user.is_superuser or self.request.user.is_hr):
-            raise PermissionDenied("Only HR or superuser can update holidays.")
+        if not AuthorizationController.call(
+            "can_update_holiday", self.request.user, model_instance
+        ):
+            raise PermissionDenied("You do not have permission to update holidays.")
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -46,8 +50,13 @@ class HolidayViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRListMi
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def authorize_destroy(self, instance):
-        if not (self.request.user.is_superuser or self.request.user.is_hr):
-            raise PermissionDenied("Only HR or superuser can delete holidays.")
+        if not AuthorizationController.call(
+            "can_delete_holiday", self.request.user, instance
+        ):
+            raise PermissionDenied("You do not have permission to delete holidays.")
 
     def authorize_list(self, request_obj):
-        pass
+        if not AuthorizationController.call(
+            "can_list_holidays", self.request.user
+        ):
+            raise PermissionDenied("You do not have permission to list holidays.")
