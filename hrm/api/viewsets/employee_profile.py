@@ -75,18 +75,18 @@ class EmployeeProfileViewSet( EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, 
         ):
             raise PermissionDenied("You do not have permission to list employees.")
 
-    def authorize_retrieve(self, model_instance):
-        if self.request.user.is_superuser:
-             return
-        if AuthorizationController.call(
-            "can_view_employee_details", self.request.user, model_instance
-        ):
-            return
-        if AuthorizationController.call(
-            "can_view_own_employee_profile", self.request.user, model_instance
-        ):
-             return
-        raise PermissionDenied("You do not have permission to view this employee profile.")
+    # def authorize_retrieve(self, model_instance):
+    #     if self.request.user.is_superuser:
+    #          return
+    #     if AuthorizationController.call(
+    #         "can_view_employee_details", self.request.user, model_instance
+    #     ):
+    #         return
+    #     if AuthorizationController.call(
+    #         "can_view_own_employee_profile", self.request.user, model_instance
+    #     ):
+    #          return
+    #     raise PermissionDenied("You do not have permission to view this employee profile.")
     def authorize_update(self, model_instance, request_obj):
         if self.request.user.is_superuser:
             return
