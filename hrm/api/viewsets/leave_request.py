@@ -43,25 +43,25 @@ class LeaveRequestViewSet(EMRCreateMixin, EMRRetrieveMixin, EMRUpdateMixin, EMRL
     filterset_class = LeaveRequestFilters
     filter_backends = [filters.DjangoFilterBackend]
 
-    def authorize_update(self, request_obj, model_instance):
-        if not AuthorizationController.call(
-            "can_update_leave_request", self.request.user, model_instance
-        ):
-            raise PermissionDenied("You do not have permission to update leave requests.")
+    # def authorize_update(self, request_obj, model_instance):
+    #     if not AuthorizationController.call(
+    #         "can_update_leave_request", self.request.user, model_instance
+    #     ):
+    #         raise PermissionDenied("You do not have permission to update leave requests.")
 
-    def authorize_create(self, request_obj):
-        if not AuthorizationController.call(
-            "can_create_leave_request", self.request.user
-        ):
-            raise PermissionDenied("You do not have permission to create leave requests.")
+    # def authorize_create(self, request_obj):
+    #     if not AuthorizationController.call(
+    #         "can_create_leave_request", self.request.user
+    #     ):
+    #         raise PermissionDenied("You do not have permission to create leave requests.")
 
-    def authorize_list(self, request_obj):
-        if self.request.user.is_superuser:
-            return
-        if not AuthorizationController.call(
-            "can_list_leave_requests", self.request.user
-        ):
-            raise PermissionDenied("You do not have permission to list leave requests.")
+    # def authorize_list(self, request_obj):
+    #     if self.request.user.is_superuser:
+    #         return
+    #     if not AuthorizationController.call(
+    #         "can_list_leave_requests", self.request.user
+    #     ):
+    #         raise PermissionDenied("You do not have permission to list leave requests.")
 
     @action(detail=True, methods=["POST"])
     def approve(self, request, *args, **kwargs):
